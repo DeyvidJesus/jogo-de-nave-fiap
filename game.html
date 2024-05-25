@@ -180,10 +180,10 @@
     function keyDown(e) {
       if (e.keyCode === 39 || e.keyCode === 68) { // Direita
         nave.dx = nave.velocidade;
-        nave.anguloAlvo = 65; // Rotacionar 15 graus para a direita
+        nave.anguloAlvo = 65; // Rotacionar 65 graus para a direita
       } else if (e.keyCode === 37 || e.keyCode === 65) { // Esquerda
         nave.dx = -nave.velocidade;
-        nave.anguloAlvo = -65; // Rotacionar 15 graus para a esquerda
+        nave.anguloAlvo = -65; // Rotacionar 65 graus para a esquerda
       } else if (e.keyCode === 38 || e.keyCode === 87) { // Cima
         nave.dy = -nave.velocidade;
       } else if (e.keyCode === 40 || e.keyCode === 83) { // Baixo
@@ -203,14 +203,21 @@
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
 
-    background.onload = () => {
-      naveImg.onload = () => {
-        obstaculoImg.onload = () => {
-          setInterval(createObstaculo, 1000);
-          atualiza();
-        };
-      };
-    };
+    function loadImage(img) {
+      return new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+    }
+
+    Promise.all([loadImage(background), loadImage(naveImg), loadImage(obstaculoImg)])
+      .then(() => {
+        setInterval(createObstaculo, 1000);
+        atualiza();
+      })
+      .catch(err => {
+        console.error('Erro ao carregar imagens', err);
+      });
   </script>
 </body>
 
