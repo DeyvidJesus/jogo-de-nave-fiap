@@ -26,10 +26,13 @@
     const nave = {
       width: 40,
       height: 50,
-      x: canvas.width / 2 - 25,
+      x: canvas.width / 2 - 20,
       y: canvas.height - 55,
       speed: 5,
-      dx: 0
+      dx: 0,
+      angulo: 0,
+      anguloAlvo: 0,
+      velocidadeRotacao: 3 // graus por frame
     };
 
     const obstaculos = [];
@@ -40,16 +43,18 @@
 
     ctx.font = "20px Arial";
     var tInicial = new Date().getTime();
-		var intervalo, tAtual;
+    var intervalo, tAtual;
 
     function desenharBackground() {
       ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
     }
 
     function desenhaNave() {
-      naveImg.style.transform = 'rotate(45deg)';
-      naveImg.style.transitionDuration = '1s';
-      ctx.drawImage(naveImg, nave.x, nave.y, nave.width, nave.height);
+      ctx.save();
+      ctx.translate(nave.x + nave.width / 2, nave.y + nave.height / 2);
+      ctx.rotate(nave.angulo * Math.PI / 180);
+      ctx.drawImage(naveImg, -nave.width / 2, -nave.height / 2, nave.width, nave.height);
+      ctx.restore();
     }
 
     function desenhaObstaculo() {
@@ -101,15 +106,16 @@
     function atualiza() {
       if (gameOver) {
         ctx.font = "40px Helvetica";
-				ctx.fillStyle = "green";
-				ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
+        ctx.fillStyle = "green";
+        ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
         return;
       }
 
       limpaCanvas();
       desenharBackground();
       
-      desenhaNave(90);
+      atualizaAnguloNave();
+      desenhaNave();
       desenhaObstaculo();
 
       moveNave();
@@ -117,29 +123,41 @@
       detectarColisao();
 
       tAtual = new Date().getTime();
-			intervalo = Math.floor((tAtual - tInicial) / 1000);
-      console.log(intervalo)
-			pontos(intervalo);
-			requestAnimationFrame(atualiza);
+      intervalo = Math.floor((tAtual - tInicial) / 1000);
+      pontos(intervalo);
+      requestAnimationFrame(atualiza);
+    }
+
+    function atualizaAnguloNave() {
+      if (nave.angulo < nave.anguloAlvo) {
+        nave.angulo += nave.velocidadeRotacao;
+        if (nave.angulo > nave.anguloAlvo) nave.angulo = nave.anguloAlvo;
+      } else if (nave.angulo > nave.anguloAlvo) {
+        nave.angulo -= nave.velocidadeRotacao;
+        if (nave.angulo < nave.anguloAlvo) nave.angulo = nave.anguloAlvo;
+      }
     }
 
     function pontos(x) {
       ctx.font = "20px Helvetica";
-				ctx.fillStyle = "white";
-				ctx.fillText("PONTOS: " + x, canvas.width - 130, canvas.height - 15);
-		}
+      ctx.fillStyle = "white";
+      ctx.fillText("PONTOS: " + x, canvas.width - 130, canvas.height - 15);
+    }
 
     function keyDown(e) {
-      if (e.keyCode === 39 || e.keyCode === 68) {
+      if (e.keyCode === 39 || e.keyCode === 68) { // Direita
         nave.dx = nave.speed;
-      } else if (e.keyCode === 37 || e.keyCode === 65) {
+        nave.anguloAlvo = 65; // Rotacionar 65 graus para a direita
+      } else if (e.keyCode === 37 || e.keyCode === 65) { // Esquerda
         nave.dx = -nave.speed;
+        nave.anguloAlvo = -65; // Rotacionar 65 graus para a esquerda
       }
     }
 
     function keyUp(e) {
       if (e.keyCode === 39 || e.keyCode === 68 || e.keyCode === 37 || e.keyCode === 65) {
         nave.dx = 0;
+        nave.anguloAlvo = 0; // Retornar a rotação para 0
       }
     }
 
