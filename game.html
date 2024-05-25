@@ -24,21 +24,24 @@
     obstaculoImg.src = 'assets/imagens/asteroideDesenho.png';
 
     const nave = {
-      width: 40,
-      height: 50,
+      largura: 40,
+      altura: 50,
       x: canvas.width / 2 - 20,
       y: canvas.height - 55,
-      speed: 5,
+      velocidade: 5,
       dx: 0,
+      dy: 0,
       angulo: 0,
       anguloAlvo: 0,
       velocidadeRotacao: 3 // graus por frame
     };
 
     const obstaculos = [];
-    const larguraObstaculo = 40;
-    const alturaObstaculo = 40;
-    const velocidadeObstaculo = 3;
+    let larguraObstaculo = 40;
+    let alturaObstaculo = 40;
+    let velocidadeObstaculo = 3;
+    const velocidadeObstaculoMax = 10;
+    const tamanhoObstaculoMax = 80;
     let gameOver = false;
 
     ctx.font = "20px Arial";
@@ -51,9 +54,9 @@
 
     function desenhaNave() {
       ctx.save();
-      ctx.translate(nave.x + nave.width / 2, nave.y + nave.height / 2);
+      ctx.translate(nave.x + nave.largura / 2, nave.y + nave.altura / 2);
       ctx.rotate(nave.angulo * Math.PI / 180);
-      ctx.drawImage(naveImg, -nave.width / 2, -nave.height / 2, nave.width, nave.height);
+      ctx.drawImage(naveImg, -nave.largura / 2, -nave.altura / 2, nave.largura, nave.altura);
       ctx.restore();
     }
 
@@ -65,13 +68,22 @@
 
     function moveNave() {
       nave.x += nave.dx;
+      nave.y += nave.dy;
 
       if (nave.x < 0) {
         nave.x = 0;
       }
 
-      if (nave.x + nave.width > canvas.width) {
-        nave.x = canvas.width - nave.width;
+      if (nave.x + nave.largura > canvas.width) {
+        nave.x = canvas.width - nave.largura;
+      }
+
+      if (nave.y < 0) {
+        nave.y = 0;
+      }
+
+      if (nave.y + nave.altura > canvas.height) {
+        nave.y = canvas.height - nave.altura;
       }
     }
     
@@ -92,8 +104,8 @@
 
     function detectarColisao() {
       obstaculos.forEach(obstaculo => {
-        if (((nave.x + nave.width) > obstaculo.x && nave.x < (obstaculo.x + larguraObstaculo)) &&
-          ((nave.y + nave.height) > obstaculo.y && nave.y < (obstaculo.y + alturaObstaculo))) {
+        if (((nave.x + nave.largura) > obstaculo.x && nave.x < (obstaculo.x + larguraObstaculo)) &&
+          ((nave.y + nave.altura) > obstaculo.y && nave.y < (obstaculo.y + alturaObstaculo))) {
           gameOver = true;
         }
       })
@@ -108,6 +120,11 @@
         ctx.font = "40px Helvetica";
         ctx.fillStyle = "green";
         ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
+        ctx.font = "20px Helvetica";
+        ctx.fillText("Reiniciando", canvas.width / 2 - 75, canvas.height / 1.8);
+        setTimeout(() => {
+          document.location.reload();
+        }, 2500)
         return;
       }
 
@@ -125,7 +142,23 @@
       tAtual = new Date().getTime();
       intervalo = Math.floor((tAtual - tInicial) / 1000);
       pontos(intervalo);
+      aumentaVelocidadeObstaculos();
+      aumentaTamanhoObstaculos();
       requestAnimationFrame(atualiza);
+    }
+
+    function aumentaVelocidadeObstaculos() {
+      if (intervalo > 5 && velocidadeObstaculo < velocidadeObstaculoMax) {
+        velocidadeObstaculo += 0.0015;
+      }
+    }
+
+    function aumentaTamanhoObstaculos() {
+      if (intervalo > 5 && larguraObstaculo < tamanhoObstaculoMax) {
+        larguraObstaculo += 0.002;
+        alturaObstaculo += 0.002;
+        console.log(larguraObstaculo, alturaObstaculo)
+      }
     }
 
     function atualizaAnguloNave() {
@@ -146,11 +179,15 @@
 
     function keyDown(e) {
       if (e.keyCode === 39 || e.keyCode === 68) { // Direita
-        nave.dx = nave.speed;
-        nave.anguloAlvo = 65; // Rotacionar 65 graus para a direita
+        nave.dx = nave.velocidade;
+        nave.anguloAlvo = 65; // Rotacionar 15 graus para a direita
       } else if (e.keyCode === 37 || e.keyCode === 65) { // Esquerda
-        nave.dx = -nave.speed;
-        nave.anguloAlvo = -65; // Rotacionar 65 graus para a esquerda
+        nave.dx = -nave.velocidade;
+        nave.anguloAlvo = -65; // Rotacionar 15 graus para a esquerda
+      } else if (e.keyCode === 38 || e.keyCode === 87) { // Cima
+        nave.dy = -nave.velocidade;
+      } else if (e.keyCode === 40 || e.keyCode === 83) { // Baixo
+        nave.dy = nave.velocidade;
       }
     }
 
@@ -158,6 +195,8 @@
       if (e.keyCode === 39 || e.keyCode === 68 || e.keyCode === 37 || e.keyCode === 65) {
         nave.dx = 0;
         nave.anguloAlvo = 0; // Retornar a rotação para 0
+      } else if (e.keyCode === 38 || e.keyCode === 87 || e.keyCode === 40 || e.keyCode === 83) {
+        nave.dy = 0;
       }
     }
 
@@ -167,7 +206,7 @@
     background.onload = () => {
       naveImg.onload = () => {
         obstaculoImg.onload = () => {
-          setInterval(createObstaculo, 2000);
+          setInterval(createObstaculo, 1000);
           atualiza();
         };
       };
