@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de nave</title>
+</head>
+
+<body>
+  <canvas id="minha-tela" width="800" height="400" style="border: #F00 solid 1px;"></canvas>
+
+  <script>
+    const canvas = document.getElementById('minha-tela');
+    const ctx = canvas.getContext('2d');
+
+    const background = new Image();
+    background.src = 'assets/imagens/background.jpg';
+
+    const naveImg = new Image();
+    naveImg.src = 'assets/imagens/fogueteDesenho.png';
+
+    const obstaculoImg = new Image();
+    obstaculoImg.src = 'assets/imagens/asteroideDesenho.png';
+
+    const nave = {
+      width: 40,
+      height: 50,
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 55,
+      speed: 5,
+      dx: 0
+    };
+
+    const obstaculos = [];
+    const larguraObstaculo = 40;
+    const alturaObstaculo = 40;
+    const velocidadeObstaculo = 3;
+    let gameOver = false;
+
+    ctx.font = "20px Arial";
+    var tInicial = new Date().getTime();
+		var intervalo, tAtual;
+
+    function desenharBackground() {
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    }
+
+    function desenhaNave() {
+      naveImg.style.transform = 'rotate(45deg)';
+      naveImg.style.transitionDuration = '1s';
+      ctx.drawImage(naveImg, nave.x, nave.y, nave.width, nave.height);
+    }
+
+    function desenhaObstaculo() {
+      obstaculos.forEach(obstaculo => {
+        ctx.drawImage(obstaculoImg, obstaculo.x, obstaculo.y, larguraObstaculo, alturaObstaculo);
+      });
+    }
+
+    function moveNave() {
+      nave.x += nave.dx;
+
+      if (nave.x < 0) {
+        nave.x = 0;
+      }
+
+      if (nave.x + nave.width > canvas.width) {
+        nave.x = canvas.width - nave.width;
+      }
+    }
+    
+    function moveObstaculos() {
+      obstaculos.forEach(obstaculo => {
+        obstaculo.y += velocidadeObstaculo;
+      });
+
+      if (obstaculos.length > 0 && obstaculos[0].y > canvas.height) {
+        obstaculos.shift();
+      }
+    }
+
+    function createObstaculo() {
+      const x = Math.random() * (canvas.width - larguraObstaculo);
+      obstaculos.push({ x, y: 0 });
+    }
+
+    function detectarColisao() {
+      obstaculos.forEach(obstaculo => {
+        if (((nave.x + nave.width) > obstaculo.x && nave.x < (obstaculo.x + larguraObstaculo)) &&
+          ((nave.y + nave.height) > obstaculo.y && nave.y < (obstaculo.y + alturaObstaculo))) {
+          gameOver = true;
+        }
+      })
+    }
+
+    function limpaCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function atualiza() {
+      if (gameOver) {
+        ctx.font = "40px Helvetica";
+				ctx.fillStyle = "green";
+				ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
+        return;
+      }
+
+      limpaCanvas();
+      desenharBackground();
+      
+      desenhaNave(90);
+      desenhaObstaculo();
+
+      moveNave();
+      moveObstaculos();
+      detectarColisao();
+
+      tAtual = new Date().getTime();
+			intervalo = Math.floor((tAtual - tInicial) / 1000);
+      console.log(intervalo)
+			pontos(intervalo);
+			requestAnimationFrame(atualiza);
+    }
+
+    function pontos(x) {
+      ctx.font = "20px Helvetica";
+				ctx.fillStyle = "white";
+				ctx.fillText("PONTOS: " + x, canvas.width - 130, canvas.height - 15);
+		}
+
+    function keyDown(e) {
+      if (e.keyCode === 39 || e.keyCode === 68) {
+        nave.dx = nave.speed;
+      } else if (e.keyCode === 37 || e.keyCode === 65) {
+        nave.dx = -nave.speed;
+      }
+    }
+
+    function keyUp(e) {
+      if (e.keyCode === 39 || e.keyCode === 68 || e.keyCode === 37 || e.keyCode === 65) {
+        nave.dx = 0;
+      }
+    }
+
+    document.addEventListener('keydown', keyDown);
+    document.addEventListener('keyup', keyUp);
+
+    background.onload = () => {
+      naveImg.onload = () => {
+        obstaculoImg.onload = () => {
+          setInterval(createObstaculo, 2000);
+          atualiza();
+        };
+      };
+    };
+  </script>
+</body>
+
+</html>

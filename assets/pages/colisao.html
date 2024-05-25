@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Detecção de Colisão</title>
+</head>
+
+<body>
+  <canvas id="minha-tela" width="800" height="400" style="border: #F00 solid 1px;"> </canvas>
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("minha-tela");
+    var context = canvas.getContext("2d");
+    // Dados da nave
+    var x_nave = canvas.width / 2 - 25;
+    var y_nave = canvas.height - 40;
+    var largura_nave = 50;
+    var altura_nave = 30;
+    var velocidade_nave = 5;
+    var dx_nave = 0;
+    // Dados do obstáculo
+    var x_obstaculo = 700;
+    var y_obstaculo = 200;
+    var largura_obstaculo = 50;
+    var altura_obstaculo = 50;
+    var velocidade_obstaculo = 5;
+    // Executa o gameloop a cada ciclo do navegador
+    requestAnimationFrame(gameloop);
+    function detectarColisao() {
+      if (((x_nave + largura_nave) > x_obstaculo && x_nave < (x_obstaculo + largura_obstaculo)) &&
+        ((y_nave + altura_nave) > y_obstaculo && y_nave < (y_obstaculo + altura_obstaculo))) {
+        // Interrompe o gameloop parando a movimentação da nave e do obstáculo
+        alert("Game Over!");
+      } else {
+        // Chama novamente o ciclo da animação
+        requestAnimationFrame(gameloop);
+      }
+    }
+    function gameloop() {
+      desenharQuadrado(x_nave, y_nave, largura_nave, altura_nave, "rgb(255,0,0)");
+      desenharQuadrado(x_obstaculo, y_obstaculo, largura_obstaculo, altura_obstaculo, "rgb(0,0,255)");
+      detectarColisao();
+      // Movimenta o quadrado vermelho
+      x_obstaculo = x_obstaculo - 5;
+      x_nave = x_nave + 5;
+    }
+    function desenharQuadrado(x, y, largura, altura, cor) {
+      // Limpa todo o Canvas
+      context.clearRect(0, 0, 800, 400);
+      // Definindo a cor
+      context.fillStyle = cor;
+      // Desenha o quadrado
+      context.fillRect(x, y, largura, altura);
+    }
+  </script>
+</body>
+
+</html>

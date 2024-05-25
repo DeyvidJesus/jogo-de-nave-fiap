@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Código 6.6 - Interação com o mouse</title>
+</head>
+
+<body>
+  <canvas id="minha-tela" width="800" height="400" style="border: #F00 solid 1px;"> </canvas>  
+  <script>
+    var canvas = document.getElementById('minha-tela');
+    var ctx = canvas.getContext('2d');
+    window.onmousedown = pressionaMouse;
+    function pressionaMouse(clique) {
+      alert('Botão do mouse pressionado em x = ' + clique.screenX + ' e y = ' + clique.screenY);
+    }
+  </script>
+</body>
+
+</html>
